@@ -20,9 +20,14 @@ func Load() (*Config, error) {
 		port = "8000"
 	}
 
+	env := os.Getenv("ENV")
+	if env == "" {
+		env = "development"
+	}
+
 	return &Config{
 		Port:            port,
 		FrontendBaseURL: os.Getenv("FRONTEND_BASE_URL"),
-		Env:             os.Getenv("ENV"),
+		Env:             env,
 	}, nil
 }
