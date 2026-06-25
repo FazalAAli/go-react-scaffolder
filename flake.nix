@@ -16,7 +16,7 @@
       {
         devShells.default = pkgs.mkShell {
           packages = [
-            pkgs.go_1_24
+            pkgs.go_1_25
             pkgs.bun
             pkgs.buf
             pkgs.just
