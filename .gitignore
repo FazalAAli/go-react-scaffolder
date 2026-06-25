@@ -1,0 +1,7 @@
+.direnv/
+.env
+node_modules/
+/frontend/build/
+/frontend/.react-router/
+/backend/tmp/
+/backend/server
