@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package app.v1;
+
+option go_package = "backend/gen/go/app/v1;appv1";
+
+message GreetRequest {
+  string name = 1;
+}
+
+message GreetResponse {
+  string greeting = 1;
+}
+
+service GreeterService {
+  rpc Greet(GreetRequest) returns (GreetResponse);
+}
