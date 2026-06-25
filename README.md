@@ -63,6 +63,22 @@ The container is `backend/internal/app/app.go`. To add, say, a database:
 2. Construct it in `New(cfg)` from config and assign it.
 3. Services already receive `*app.App`, so they can use `a.DB`.
 
+## Configuration
+
+Both apps read config from the environment and work with zero setup (sensible defaults). To override, copy the examples:
+
+```bash
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+```
+
 ## Deployment
 
-Both apps have a `Dockerfile`. Build with `docker build ./backend` and `docker build ./frontend`. Set the frontend's `VITE_API_URL` to the backend's public URL.
+Both apps have a `Dockerfile`:
+
+```bash
+docker build ./backend
+docker build --build-arg VITE_API_URL=https://api.example.com ./frontend
+```
+
+Vite inlines `VITE_API_URL` at build time, so the frontend takes it as a build arg pointing at the backend's public URL (defaults to `http://localhost:8000`).
