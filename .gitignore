@@ -1,5 +1,5 @@
 /scaffold
-
+.direnv/
 # Generated artifacts inside feature payloads (never commit these)
 features/frontend/files/frontend/node_modules/
 features/frontend/files/frontend/build/
