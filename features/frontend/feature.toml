@@ -1,0 +1,35 @@
+name = "frontend"
+always = true
+description = "React Router SPA frontend (Vite, Tailwind, connect client)"
+
+post_steps = ["cd frontend && bun install"]
+
+[[regions]]
+target = "flake.nix"
+region = "devshell-packages"
+content = "pkgs.bun"
+
+[[regions]]
+target = "justfile"
+region = "recipes"
+content = """
+# Install frontend dependencies
+install:
+    cd frontend && bun install
+
+# Run the frontend dev server
+dev-frontend:
+    cd frontend && bun dev
+
+# Build the frontend
+build-frontend:
+    cd frontend && bun run build
+"""
+
+[[regions]]
+target = ".gitignore"
+region = "ignore"
+content = """
+node_modules/
+/frontend/build/
+/frontend/.react-router/"""

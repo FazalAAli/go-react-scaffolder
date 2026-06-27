@@ -1,0 +1,5 @@
+.direnv/
+.env
+
+# scaffold:region:ignore:start
+# scaffold:region:ignore:end

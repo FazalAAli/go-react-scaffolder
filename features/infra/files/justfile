@@ -1,0 +1,8 @@
+set shell := ["bash", "-uc"]
+
+# List available tasks
+default:
+    @just --list
+
+# scaffold:region:recipes:start
+# scaffold:region:recipes:end

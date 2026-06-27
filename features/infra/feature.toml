@@ -1,0 +1,22 @@
+name = "infra"
+always = true
+description = "Nix devshell, direnv, justfile, gitignore"
+
+[[regions]]
+target = "flake.nix"
+region = "devshell-packages"
+content = "pkgs.just"
+
+[[regions]]
+target = "justfile"
+region = "recipes"
+content = """
+# Run backend and frontend together
+dev:
+    just dev-backend & just dev-frontend; wait
+
+# Build backend and frontend
+build:
+    just build-backend
+    just build-frontend
+"""
