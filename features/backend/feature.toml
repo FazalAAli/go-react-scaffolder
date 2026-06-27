@@ -2,6 +2,13 @@ name = "backend"
 always = true
 description = "Go + Echo + ConnectRPC backend, proto, and generated code"
 
+post_steps = ["cd backend && go mod tidy"]
+
+[[regions]]
+target = "README.md"
+region = "readme-components"
+content = "- `backend/` — Go + Echo + ConnectRPC service (proto in `proto/`)."
+
 [[regions]]
 target = "flake.nix"
 region = "devshell-packages"

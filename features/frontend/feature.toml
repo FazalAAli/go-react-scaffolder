@@ -5,6 +5,11 @@ description = "React Router SPA frontend (Vite, Tailwind, connect client)"
 post_steps = ["cd frontend && bun install"]
 
 [[regions]]
+target = "README.md"
+region = "readme-components"
+content = "- `frontend/` — React Router SPA (Vite, Tailwind, connect client)."
+
+[[regions]]
 target = "flake.nix"
 region = "devshell-packages"
 content = "pkgs.bun"
