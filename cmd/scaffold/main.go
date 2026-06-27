@@ -9,50 +9,45 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/huh"
+	"github.com/spf13/cobra"
 
 	"scaffold/internal/engine"
 )
 
 func main() {
-	if len(os.Args) < 2 || os.Args[1] != "new" {
-		fmt.Fprintln(os.Stderr, "usage: scaffold new <target-dir> [--with a,b] [--catalog DIR]")
-		os.Exit(2)
-	}
-	if err := runNew(os.Args[2:]); err != nil {
+	if err := rootCmd().Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}
 }
 
-func runNew(args []string) error {
-	var target, with, catalog string
-	catalog = "features"
-	withSet := false
-	rest := []string{}
-	for i := 0; i < len(args); i++ {
-		switch args[i] {
-		case "--with":
-			i++
-			if i >= len(args) {
-				return fmt.Errorf("--with requires a value")
-			}
-			with = args[i]
-			withSet = true
-		case "--catalog":
-			i++
-			if i >= len(args) {
-				return fmt.Errorf("--catalog requires a value")
-			}
-			catalog = args[i]
-		default:
-			rest = append(rest, args[i])
-		}
+func rootCmd() *cobra.Command {
+	root := &cobra.Command{
+		Use:           "scaffold",
+		Short:         "Generate a Go + React Router monorepo from a feature catalog",
+		SilenceUsage:  true,
+		SilenceErrors: true,
 	}
-	if len(rest) != 1 {
-		return fmt.Errorf("expected exactly one target directory")
-	}
-	target = rest[0]
+	root.AddCommand(newProjectCmd())
+	return root
+}
 
+func newProjectCmd() *cobra.Command {
+	var with, catalog string
+	cmd := &cobra.Command{
+		Use:   "new <target-dir>",
+		Short: "Create a new project in <target-dir>",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runNew(args[0], catalog, with, cmd.Flags().Changed("with"))
+		},
+	}
+	cmd.Flags().StringVar(&with, "with", "", "comma-separated optional features to enable (skips the interactive picker)")
+	cmd.Flags().StringVar(&catalog, "catalog", "features", "path to the feature catalog directory")
+	return cmd
+}
+
+func runNew(target, catalog, with string, withSet bool) error {
 	cat, err := engine.LoadCatalog(catalog)
 	if err != nil {
 		return fmt.Errorf("loading catalog: %w", err)
