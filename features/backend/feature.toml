@@ -1,0 +1,32 @@
+name = "backend"
+always = true
+description = "Go + Echo + ConnectRPC backend, proto, and generated code"
+
+[[regions]]
+target = "flake.nix"
+region = "devshell-packages"
+content = """
+pkgs.go_1_25
+pkgs.buf"""
+
+[[regions]]
+target = "justfile"
+region = "recipes"
+content = """
+# Regenerate Go + TS code from proto
+gen:
+    cd proto && buf generate
+
+# Run the Go backend
+dev-backend:
+    cd backend && go run ./cmd/server
+
+# Build the Go backend
+build-backend:
+    cd backend && go build ./...
+"""
+
+[[regions]]
+target = ".gitignore"
+region = "ignore"
+content = "/backend/server"

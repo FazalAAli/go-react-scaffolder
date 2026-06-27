@@ -1,7 +1,8 @@
-.direnv/
-.env
-node_modules/
-/frontend/build/
-/frontend/.react-router/
-/backend/tmp/
-/backend/server
+/scaffold
+
+# Generated artifacts inside feature payloads (never commit these)
+features/frontend/files/frontend/node_modules/
+features/frontend/files/frontend/build/
+features/frontend/files/frontend/.react-router/
+features/backend/files/backend/tmp/
+features/backend/files/backend/server

@@ -1,0 +1,22 @@
+name = "air"
+always = false
+description = "Go hot-reload via air"
+
+[[regions]]
+target = "flake.nix"
+region = "devshell-packages"
+content = "pkgs.air"
+
+[[regions]]
+target = "justfile"
+region = "recipes"
+content = """
+# Run the Go backend with hot reload (air)
+watch:
+    cd backend && air
+"""
+
+[[regions]]
+target = ".gitignore"
+region = "ignore"
+content = "/backend/tmp/"

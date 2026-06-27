@@ -16,11 +16,8 @@
       {
         devShells.default = pkgs.mkShell {
           packages = [
-            pkgs.go_1_25
-            pkgs.bun
-            pkgs.buf
-            pkgs.just
-            pkgs.air
+            # scaffold:region:devshell-packages:start
+            # scaffold:region:devshell-packages:end
           ];
           shellHook = ''
             echo "Dev shell ready. Run 'just' to see available tasks."
