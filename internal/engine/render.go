@@ -30,9 +30,17 @@ func RenderRegions(content string, contributions map[string][]string) (string, e
 		if end < 0 {
 			return "", fmt.Errorf("region %q: missing end marker", name)
 		}
-		out = append(out, lines[i]) // start marker
+		startLine := lines[i]
+		indent := startLine[:len(startLine)-len(strings.TrimLeft(startLine, " \t"))]
+		out = append(out, startLine) // start marker
 		for _, c := range contributions[name] {
-			out = append(out, strings.Split(strings.TrimRight(c, "\n"), "\n")...)
+			for _, l := range strings.Split(strings.TrimRight(c, "\n"), "\n") {
+				if l == "" {
+					out = append(out, "")
+				} else {
+					out = append(out, indent+l)
+				}
+			}
 		}
 		out = append(out, lines[end]) // end marker
 		i = end

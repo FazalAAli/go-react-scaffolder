@@ -64,6 +64,18 @@ func TestRenderRegionsUnreferencedContribution(t *testing.T) {
 	}
 }
 
+func TestRenderRegionsIndentsToMarker(t *testing.T) {
+	in := "    # scaffold:region:pkgs:start\n    # scaffold:region:pkgs:end\n"
+	out, err := RenderRegions(in, map[string][]string{"pkgs": {"go", "bun"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := "    # scaffold:region:pkgs:start\n    go\n    bun\n    # scaffold:region:pkgs:end\n"
+	if out != want {
+		t.Errorf("got:\n%q\nwant:\n%q", out, want)
+	}
+}
+
 func TestRenderRegionsMissingEnd(t *testing.T) {
 	in := "# scaffold:region:pkgs:start\n"
 	if _, err := RenderRegions(in, nil); err == nil {

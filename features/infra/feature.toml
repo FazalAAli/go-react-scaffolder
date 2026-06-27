@@ -13,7 +13,7 @@ region = "recipes"
 content = """
 # Run backend and frontend together
 dev:
-    just dev-backend & just dev-frontend
+    just dev-backend & just dev-frontend; wait
 
 # Build backend and frontend
 build:
