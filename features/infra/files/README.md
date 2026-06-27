@@ -1,6 +1,11 @@
 # {{project}}
 
-Go + Echo + ConnectRPC backend and a React Router (SPA) frontend, in a Nix devshell.
+A monorepo wired together by `scaffold`, in a Nix devshell.
+
+## Components
+
+<!-- scaffold:region:readme-components:start -->
+<!-- scaffold:region:readme-components:end -->
 
 ## Quick start
 

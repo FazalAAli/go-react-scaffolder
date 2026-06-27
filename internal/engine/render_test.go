@@ -76,6 +76,20 @@ func TestRenderRegionsIndentsToMarker(t *testing.T) {
 	}
 }
 
+func TestRenderRegionsHTMLCommentMarkers(t *testing.T) {
+	// markdown has no line comments, so markers live in HTML comments with a
+	// trailing "-->" after the region token.
+	in := "<!-- scaffold:region:components:start -->\n<!-- scaffold:region:components:end -->\n"
+	out, err := RenderRegions(in, map[string][]string{"components": {"- backend", "- frontend"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := "<!-- scaffold:region:components:start -->\n- backend\n- frontend\n<!-- scaffold:region:components:end -->\n"
+	if out != want {
+		t.Errorf("got:\n%q\nwant:\n%q", out, want)
+	}
+}
+
 func TestRenderRegionsMissingEnd(t *testing.T) {
 	in := "# scaffold:region:pkgs:start\n"
 	if _, err := RenderRegions(in, nil); err == nil {

@@ -54,10 +54,17 @@ func regionMarker(line, kind string) (string, bool) {
 	if idx < 0 {
 		return "", false
 	}
-	rest := strings.TrimSpace(line[idx+len(prefix):])
-	suffix := ":" + kind
-	if !strings.HasSuffix(rest, suffix) {
+	// The marker token is the first whitespace-delimited field after the
+	// prefix; anything after it (e.g. an HTML comment's trailing "-->") is
+	// ignored, so markdown markers like "<!-- scaffold:region:x:start -->" work.
+	fields := strings.Fields(line[idx+len(prefix):])
+	if len(fields) == 0 {
 		return "", false
 	}
-	return strings.TrimSuffix(rest, suffix), true
+	token := fields[0]
+	suffix := ":" + kind
+	if !strings.HasSuffix(token, suffix) {
+		return "", false
+	}
+	return strings.TrimSuffix(token, suffix), true
 }
