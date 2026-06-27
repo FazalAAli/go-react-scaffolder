@@ -1,0 +1,9 @@
+name = "alpha"
+always = true
+description = "fixture feature"
+post_steps = ["echo hi"]
+
+[[regions]]
+target = "flake.nix"
+region = "devshell-packages"
+content = "pkgs.alpha"
