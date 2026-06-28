@@ -30,6 +30,11 @@ if err != nil {
 a.DB = database"""
 
 [[regions]]
+target = "backend/internal/app/app.go"
+region = "app-close"
+content = "_ = a.DB.Close()"
+
+[[regions]]
 target = "flake.nix"
 region = "devshell-packages"
 content = """

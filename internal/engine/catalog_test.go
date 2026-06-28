@@ -89,6 +89,7 @@ func TestCatalogPostgresFeature(t *testing.T) {
 		"DB *db.Pool",
 		`"backend/internal/db"`,
 		"db.New(context.Background())",
+		"a.DB.Close()",
 	} {
 		if !strings.Contains(appGo, want) {
 			t.Errorf("app.go missing %q:\n%s", want, appGo)
@@ -133,6 +134,7 @@ func TestCatalogSqliteFeature(t *testing.T) {
 		"DB *db.Pool",
 		`"backend/internal/db"`,
 		"db.New(context.Background())",
+		"_ = a.DB.Close()",
 	} {
 		if !strings.Contains(appGo, want) {
 			t.Errorf("app.go missing %q:\n%s", want, appGo)
