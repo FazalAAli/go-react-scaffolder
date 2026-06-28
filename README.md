@@ -13,7 +13,7 @@ go run ./cmd/scaffold new ../my-app --with air,dockerfile   # non-interactive
 ## Catalog
 
 - **Always:** `backend` (Go/Echo/connect-go + proto), `frontend` (React Router SPA), `infra` (Nix/just/direnv).
-- **Optional:** `air` (Go hot-reload), `dockerfile` (production Dockerfiles).
+- **Optional:** `air` (Go hot-reload), `dockerfile` (production Dockerfiles), `postgres` (PostgreSQL via pgx + sqlc + goose), `sqlite` (SQLite via modernc.org/sqlite + sqlc + goose).
 
 Each feature is a directory under `features/` with a `feature.toml` and a
 `files/` payload copied verbatim into the project. Shared files (`flake.nix`,

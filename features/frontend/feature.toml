@@ -38,3 +38,8 @@ content = """
 node_modules/
 /frontend/build/
 /frontend/.react-router/"""
+
+[[regions]]
+target = "frontend/.env"
+region = "env"
+content = "VITE_API_URL=http://localhost:8000"

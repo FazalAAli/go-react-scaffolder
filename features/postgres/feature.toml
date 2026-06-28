@@ -1,0 +1,65 @@
+name = "postgres"
+always = false
+description = "PostgreSQL via pgx + sqlc + goose migrations"
+
+[[regions]]
+target = "backend/.env"
+region = "env"
+content = "DATABASE_URL=postgres://postgres:postgres@localhost:5432/app?sslmode=disable"
+
+[[regions]]
+target = "backend/internal/app/app.go"
+region = "app-imports"
+content = """
+"context"
+"backend/internal/db\""""
+
+[[regions]]
+target = "backend/internal/app/app.go"
+region = "app-fields"
+content = "DB *db.Pool"
+
+[[regions]]
+target = "backend/internal/app/app.go"
+region = "app-init"
+content = """
+database, err := db.New(context.Background())
+if err != nil {
+	return nil, err
+}
+a.DB = database"""
+
+[[regions]]
+target = "flake.nix"
+region = "devshell-packages"
+content = """
+pkgs.sqlc
+pkgs.goose
+pkgs.postgresql"""
+
+[[regions]]
+target = "justfile"
+region = "recipes"
+content = """
+# Run a local PostgreSQL dev server (initializes the data dir on first run)
+db-dev:
+    cd backend && [ -d pgdata ] || initdb -D pgdata
+    cd backend && postgres -D pgdata -k /tmp
+
+# Generate Go from SQL (sqlc)
+db-gen:
+    cd backend && sqlc generate
+
+# Apply database migrations
+db-migrate:
+    cd backend && set -a && source .env && set +a && goose -dir migrations postgres "$DATABASE_URL" up
+
+# Create a new migration
+db-migrate-new name:
+    cd backend && goose -dir migrations create {{name}} sql
+"""
+
+[[regions]]
+target = "README.md"
+region = "readme-components"
+content = "- `backend/migrations/` — goose SQL migrations; `backend/queries/` — sqlc queries (PostgreSQL)."
