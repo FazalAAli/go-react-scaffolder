@@ -1,6 +1,14 @@
 package server
 
 import (
+	"context"
+	"errors"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"backend/internal/app"
 	"backend/internal/service"
 
@@ -15,5 +23,17 @@ func Run(a *app.App) error {
 
 	service.NewGreeter(a).Mount(e) // one line per service
 
-	return e.Start(":" + a.Config.Port)
+	go func() {
+		if err := e.Start(":" + a.Config.Port); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			e.Logger.Fatal(err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	<-quit
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	return e.Shutdown(ctx)
 }

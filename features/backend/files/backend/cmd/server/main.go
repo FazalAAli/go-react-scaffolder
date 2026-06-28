@@ -17,7 +17,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("app init: %v", err)
 	}
+	defer application.Close()
+
 	if err := server.Run(application); err != nil {
-		log.Fatalf("server: %v", err)
+		log.Printf("server: %v", err)
 	}
 }

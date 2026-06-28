@@ -62,8 +62,10 @@ func TestCatalogAppGoSeams(t *testing.T) {
 		"scaffold:region:app-imports:start",
 		"scaffold:region:app-fields:start",
 		"scaffold:region:app-init:start",
+		"scaffold:region:app-close:start",
 		"a := &App{Config: cfg}",
 		"return a, nil",
+		"func (a *App) Close()",
 	} {
 		if !strings.Contains(appGo, want) {
 			t.Errorf("app.go missing %q:\n%s", want, appGo)
@@ -216,7 +218,7 @@ func TestCatalogPostHogFeature(t *testing.T) {
 	}
 
 	appGo := read(t, filepath.Join(dst, "backend", "internal", "app", "app.go"))
-	for _, want := range []string{"PostHog *posthog.Client", `"backend/internal/posthog"`, "posthog.New(cfg)"} {
+	for _, want := range []string{"PostHog *posthog.Client", `"backend/internal/posthog"`, "posthog.New(cfg)", "_ = a.PostHog.Close()"} {
 		if !strings.Contains(appGo, want) {
 			t.Errorf("app.go missing %q:\n%s", want, appGo)
 		}

@@ -63,6 +63,11 @@ if err != nil {
 a.PostHog = ph"""
 
 [[regions]]
+target = "backend/internal/app/app.go"
+region = "app-close"
+content = "_ = a.PostHog.Close()"
+
+[[regions]]
 target = "README.md"
 region = "readme-components"
 content = "- PostHog analytics wired into the React app and Go backend (`posthog` feature)."

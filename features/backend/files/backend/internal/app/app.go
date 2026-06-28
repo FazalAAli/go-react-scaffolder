@@ -20,3 +20,10 @@ func New(cfg *config.Config) (*App, error) {
 	// scaffold:region:app-init:end
 	return a, nil
 }
+
+// Close releases resources held by features. Features register cleanup via the
+// app-close region; it runs on graceful shutdown.
+func (a *App) Close() {
+	// scaffold:region:app-close:start
+	// scaffold:region:app-close:end
+}
