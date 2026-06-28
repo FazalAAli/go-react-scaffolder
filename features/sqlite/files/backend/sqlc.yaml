@@ -1,0 +1,14 @@
+version: "2"
+sql:
+  - engine: "sqlite"
+    schema: "migrations"
+    queries: "queries"
+    gen:
+      go:
+        package: "dbgen"
+        out: "internal/db/dbgen"
+        overrides:
+          - db_type: "bool"
+            go_type: "bool"
+          - db_type: "boolean"
+            go_type: "bool"

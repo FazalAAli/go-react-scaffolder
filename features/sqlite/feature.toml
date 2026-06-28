@@ -1,0 +1,65 @@
+name = "sqlite"
+always = false
+description = "SQLite via modernc.org/sqlite + sqlc + goose migrations"
+
+[[regions]]
+target = "backend/.env"
+region = "env"
+content = "DATABASE_URL=app.db"
+
+[[regions]]
+target = "backend/internal/app/app.go"
+region = "app-imports"
+content = """
+"context"
+"backend/internal/db\""""
+
+[[regions]]
+target = "backend/internal/app/app.go"
+region = "app-fields"
+content = "DB *db.Pool"
+
+[[regions]]
+target = "backend/internal/app/app.go"
+region = "app-init"
+content = """
+database, err := db.New(context.Background())
+if err != nil {
+	return nil, err
+}
+a.DB = database"""
+
+[[regions]]
+target = "flake.nix"
+region = "devshell-packages"
+content = """
+pkgs.sqlc
+pkgs.goose
+pkgs.sqlite"""
+
+[[regions]]
+target = "justfile"
+region = "recipes"
+content = """
+# Generate Go from SQL (sqlc)
+db-gen:
+    cd backend && sqlc generate
+
+# Apply database migrations
+db-migrate:
+    cd backend && set -a && source .env && set +a && goose -dir migrations sqlite3 "$DATABASE_URL" up
+
+# Create a new migration
+db-migrate-new name:
+    cd backend && goose -dir migrations create {{name}} sql
+"""
+
+[[regions]]
+target = "README.md"
+region = "readme-components"
+content = "- `backend/migrations/` — goose SQL migrations; `backend/queries/` — sqlc queries (SQLite)."
+
+[[regions]]
+target = ".gitignore"
+region = "ignore"
+content = "/backend/*.db"
