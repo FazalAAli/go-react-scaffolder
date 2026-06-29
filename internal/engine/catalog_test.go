@@ -255,6 +255,63 @@ func TestCatalogFrontendProviderSeam(t *testing.T) {
 	}
 }
 
+func TestCatalogSentryFeature(t *testing.T) {
+	dst := writeRealCatalog(t, "sentry")
+
+	providers := read(t, filepath.Join(dst, "frontend", "app", "providers.tsx"))
+	for _, want := range []string{
+		`import { SentryProvider } from "~/integrations/sentry";`,
+		"SentryProvider,",
+	} {
+		if !strings.Contains(providers, want) {
+			t.Errorf("providers.tsx missing %q:\n%s", want, providers)
+		}
+	}
+	read(t, filepath.Join(dst, "frontend", "app", "integrations", "sentry.tsx"))
+
+	frontendEnv := read(t, filepath.Join(dst, "frontend", ".env"))
+	if !strings.Contains(frontendEnv, "VITE_SENTRY_DSN=") {
+		t.Errorf("frontend/.env missing VITE_SENTRY_DSN:\n%s", frontendEnv)
+	}
+
+	backendEnv := read(t, filepath.Join(dst, "backend", ".env"))
+	if !strings.Contains(backendEnv, "SENTRY_DSN=") {
+		t.Errorf("backend/.env missing SENTRY_DSN:\n%s", backendEnv)
+	}
+
+	cfg := read(t, filepath.Join(dst, "backend", "internal", "config", "config.go"))
+	for _, want := range []string{"SentryDSN string", `os.Getenv("SENTRY_DSN")`} {
+		if !strings.Contains(cfg, want) {
+			t.Errorf("config.go missing %q:\n%s", want, cfg)
+		}
+	}
+
+	appGo := read(t, filepath.Join(dst, "backend", "internal", "app", "app.go"))
+	for _, want := range []string{"Sentry *sentry.Client", `"backend/internal/sentry"`, "sentry.New(cfg)", "_ = a.Sentry.Close()"} {
+		if !strings.Contains(appGo, want) {
+			t.Errorf("app.go missing %q:\n%s", want, appGo)
+		}
+	}
+
+	serverGo := read(t, filepath.Join(dst, "backend", "internal", "server", "server.go"))
+	for _, want := range []string{
+		`sentryecho "github.com/getsentry/sentry-go/echo"`,
+		"e.Use(middleware.Recover())",
+		"sentryecho.New(sentryecho.Options{Repanic: true})",
+	} {
+		if !strings.Contains(serverGo, want) {
+			t.Errorf("server.go missing %q:\n%s", want, serverGo)
+		}
+	}
+
+	snGo := read(t, filepath.Join(dst, "backend", "internal", "sentry", "sentry.go"))
+	for _, want := range []string{"sentrygo.Init", "func (c *Client) Close()"} {
+		if !strings.Contains(snGo, want) {
+			t.Errorf("sentry.go missing %q:\n%s", want, snGo)
+		}
+	}
+}
+
 func TestCatalogServerSeams(t *testing.T) {
 	dst := writeRealCatalog(t)
 	serverGo := read(t, filepath.Join(dst, "backend", "internal", "server", "server.go"))

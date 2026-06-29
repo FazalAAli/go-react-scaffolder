@@ -1,3 +1,77 @@
 name = "sentry"
 always = false
 description = "Sentry error tracking & tracing (React + Go)"
+
+post_steps = ["cd frontend && bun add @sentry/react"]
+
+[[regions]]
+target = "frontend/app/providers.tsx"
+region = "providers-imports"
+content = 'import { SentryProvider } from "~/integrations/sentry";'
+
+[[regions]]
+target = "frontend/app/providers.tsx"
+region = "providers"
+content = "SentryProvider,"
+
+[[regions]]
+target = "frontend/.env"
+region = "env"
+content = "VITE_SENTRY_DSN="
+
+[[regions]]
+target = "backend/.env"
+region = "env"
+content = "SENTRY_DSN="
+
+[[regions]]
+target = "backend/internal/config/config.go"
+region = "config-fields"
+content = "SentryDSN string"
+
+[[regions]]
+target = "backend/internal/config/config.go"
+region = "config-load"
+content = 'SentryDSN: os.Getenv("SENTRY_DSN"),'
+
+[[regions]]
+target = "backend/internal/app/app.go"
+region = "app-imports"
+content = '"backend/internal/sentry"'
+
+[[regions]]
+target = "backend/internal/app/app.go"
+region = "app-fields"
+content = "Sentry *sentry.Client"
+
+[[regions]]
+target = "backend/internal/app/app.go"
+region = "app-init"
+content = """
+sn, err := sentry.New(cfg)
+if err != nil {
+	return nil, err
+}
+a.Sentry = sn"""
+
+[[regions]]
+target = "backend/internal/app/app.go"
+region = "app-close"
+content = "_ = a.Sentry.Close()"
+
+[[regions]]
+target = "backend/internal/server/server.go"
+region = "server-imports"
+content = 'sentryecho "github.com/getsentry/sentry-go/echo"'
+
+[[regions]]
+target = "backend/internal/server/server.go"
+region = "server-middleware"
+content = """
+e.Use(middleware.Recover())
+e.Use(sentryecho.New(sentryecho.Options{Repanic: true}))"""
+
+[[regions]]
+target = "README.md"
+region = "readme-components"
+content = "- Sentry error tracking & tracing wired into the React app and Go backend (`sentry` feature)."
