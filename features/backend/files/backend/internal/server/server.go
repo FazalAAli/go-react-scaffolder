@@ -19,7 +19,7 @@ import (
 func Run(a *app.App) error {
 	e := echo.New()
 	e.Use(middleware.Recover())
-	e.Use(middleware.CORS())
+	e.Use(middleware.CORS("*"))
 	// scaffold:region:server-middleware:start
 	// scaffold:region:server-middleware:end
 

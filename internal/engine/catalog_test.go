@@ -321,7 +321,7 @@ func TestCatalogServerSeams(t *testing.T) {
 		"scaffold:region:server-middleware:start",
 		"scaffold:region:server-middleware:end",
 		"e.Use(middleware.Recover())",
-		"e.Use(middleware.CORS())",
+		`e.Use(middleware.CORS("*"))`,
 	} {
 		if !strings.Contains(serverGo, want) {
 			t.Errorf("server.go missing %q:\n%s", want, serverGo)
