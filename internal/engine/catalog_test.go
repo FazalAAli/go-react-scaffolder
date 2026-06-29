@@ -296,7 +296,6 @@ func TestCatalogSentryFeature(t *testing.T) {
 	serverGo := read(t, filepath.Join(dst, "backend", "internal", "server", "server.go"))
 	for _, want := range []string{
 		`sentryecho "github.com/getsentry/sentry-go/echo"`,
-		"e.Use(middleware.Recover())",
 		"sentryecho.New(sentryecho.Options{Repanic: true})",
 	} {
 		if !strings.Contains(serverGo, want) {
@@ -321,6 +320,7 @@ func TestCatalogServerSeams(t *testing.T) {
 		"scaffold:region:server-imports:end",
 		"scaffold:region:server-middleware:start",
 		"scaffold:region:server-middleware:end",
+		"e.Use(middleware.Recover())",
 		"e.Use(middleware.CORS())",
 	} {
 		if !strings.Contains(serverGo, want) {

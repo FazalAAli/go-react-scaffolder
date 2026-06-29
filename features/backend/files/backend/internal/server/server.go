@@ -21,6 +21,7 @@ import (
 func Run(a *app.App) error {
 	e := echo.New()
 	e.HideBanner = true
+	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 	// scaffold:region:server-middleware:start
 	// scaffold:region:server-middleware:end

@@ -67,9 +67,7 @@ content = 'sentryecho "github.com/getsentry/sentry-go/echo"'
 [[regions]]
 target = "backend/internal/server/server.go"
 region = "server-middleware"
-content = """
-e.Use(middleware.Recover())
-e.Use(sentryecho.New(sentryecho.Options{Repanic: true}))"""
+content = 'e.Use(sentryecho.New(sentryecho.Options{Repanic: true}))'
 
 [[regions]]
 target = "README.md"
