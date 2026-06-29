@@ -1,6 +1,7 @@
 name = "sqlite"
 always = false
 description = "SQLite via modernc.org/sqlite + sqlc + goose migrations"
+conflicts = ["postgres"]
 
 [[regions]]
 target = "backend/.env"

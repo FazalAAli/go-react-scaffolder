@@ -1,6 +1,9 @@
 package engine
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func cat() []Feature {
 	return []Feature{
@@ -75,6 +78,80 @@ func TestResolveMultiOptionalOrder(t *testing.T) {
 	// always (core) then optional alpha-sorted (alpha, zeta)
 	if got := p.Features; len(got) != 3 || got[0] != "core" || got[1] != "alpha" || got[2] != "zeta" {
 		t.Fatalf("Features = %v, want [core alpha zeta]", got)
+	}
+}
+
+func TestResolveConflictingFeatures(t *testing.T) {
+	c := []Feature{
+		{Name: "core", Always: true, Dir: "f/core"},
+		{Name: "postgres", Always: false, Dir: "f/postgres", Conflicts: []string{"sqlite"}},
+		{Name: "sqlite", Always: false, Dir: "f/sqlite"},
+	}
+	_, err := Resolve(c, []string{"postgres", "sqlite"})
+	if err == nil {
+		t.Fatal("expected error selecting two conflicting features")
+	}
+	if !strings.Contains(err.Error(), "postgres") || !strings.Contains(err.Error(), "sqlite") {
+		t.Fatalf("error should name both features, got: %v", err)
+	}
+}
+
+func TestResolveConflictOneSidedDeclarationSuffices(t *testing.T) {
+	// only postgres declares the conflict; selecting in the other order still fails.
+	c := []Feature{
+		{Name: "core", Always: true, Dir: "f/core"},
+		{Name: "postgres", Always: false, Dir: "f/postgres", Conflicts: []string{"sqlite"}},
+		{Name: "sqlite", Always: false, Dir: "f/sqlite"},
+	}
+	if _, err := Resolve(c, []string{"sqlite", "postgres"}); err == nil {
+		t.Fatal("expected conflict error regardless of selection order")
+	}
+}
+
+func TestResolveRequiresMissing(t *testing.T) {
+	c := []Feature{
+		{Name: "core", Always: true, Dir: "f/core"},
+		{Name: "stripe", Always: false, Dir: "f/stripe", Requires: []string{"postgres"}},
+		{Name: "postgres", Always: false, Dir: "f/postgres"},
+	}
+	_, err := Resolve(c, []string{"stripe"})
+	if err == nil {
+		t.Fatal("expected error: stripe requires postgres which is not selected")
+	}
+	if !strings.Contains(err.Error(), "stripe") || !strings.Contains(err.Error(), "postgres") {
+		t.Fatalf("error should name requiring and required feature, got: %v", err)
+	}
+}
+
+func TestResolveRequiresSatisfied(t *testing.T) {
+	c := []Feature{
+		{Name: "core", Always: true, Dir: "f/core"},
+		{Name: "stripe", Always: false, Dir: "f/stripe", Requires: []string{"postgres"}},
+		{Name: "postgres", Always: false, Dir: "f/postgres"},
+	}
+	if _, err := Resolve(c, []string{"stripe", "postgres"}); err != nil {
+		t.Fatalf("requires satisfied should not error: %v", err)
+	}
+}
+
+func TestResolveRequiresAlwaysFeature(t *testing.T) {
+	// a requirement satisfied by an always-on feature is fine.
+	c := []Feature{
+		{Name: "backend", Always: true, Dir: "f/backend"},
+		{Name: "thing", Always: false, Dir: "f/thing", Requires: []string{"backend"}},
+	}
+	if _, err := Resolve(c, []string{"thing"}); err != nil {
+		t.Fatalf("requirement met by an always feature should not error: %v", err)
+	}
+}
+
+func TestResolveUnknownConflictReference(t *testing.T) {
+	c := []Feature{
+		{Name: "core", Always: true, Dir: "f/core"},
+		{Name: "x", Always: false, Dir: "f/x", Conflicts: []string{"ghost"}},
+	}
+	if _, err := Resolve(c, []string{"x"}); err == nil {
+		t.Fatal("expected error: conflict references an unknown feature")
 	}
 }
 

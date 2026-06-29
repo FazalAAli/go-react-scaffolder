@@ -54,6 +54,29 @@ func Resolve(catalog []Feature, selectedOptional []string) (Plan, error) {
 	sort.Slice(optional, func(i, j int) bool { return optional[i].Name < optional[j].Name })
 	ordered := append(always, optional...)
 
+	active := map[string]bool{}
+	for _, f := range ordered {
+		active[f.Name] = true
+	}
+	for _, f := range ordered {
+		for _, c := range f.Conflicts {
+			if _, known := byName[c]; !known {
+				return Plan{}, fmt.Errorf("feature %q declares conflict with unknown feature %q", f.Name, c)
+			}
+			if active[c] {
+				return Plan{}, fmt.Errorf("features %q and %q conflict and cannot be selected together", f.Name, c)
+			}
+		}
+		for _, r := range f.Requires {
+			if _, known := byName[r]; !known {
+				return Plan{}, fmt.Errorf("feature %q requires unknown feature %q", f.Name, r)
+			}
+			if !active[r] {
+				return Plan{}, fmt.Errorf("feature %q requires %q, which is not selected", f.Name, r)
+			}
+		}
+	}
+
 	plan := Plan{Regions: map[RegionKey][]string{}}
 	for _, f := range ordered {
 		plan.Features = append(plan.Features, f.Name)

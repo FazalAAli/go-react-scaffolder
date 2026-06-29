@@ -20,6 +20,8 @@ type Feature struct {
 	Name        string               `toml:"name"`
 	Always      bool                 `toml:"always"`
 	Description string               `toml:"description"`
+	Conflicts   []string             `toml:"conflicts"` // optional features that cannot be active alongside this one
+	Requires    []string             `toml:"requires"`  // features that must also be active for this one to work
 	Regions     []RegionContribution `toml:"regions"`
 	PostSteps   []string             `toml:"post_steps"`
 
