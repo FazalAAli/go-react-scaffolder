@@ -18,11 +18,16 @@ func New(cfg *config.Config) (*Client, error) {
 	if cfg.SentryDSN == "" {
 		return &Client{}, nil
 	}
+	tracesSampleRate := 1.0
+	if cfg.Env == "production" {
+		tracesSampleRate = 0.1
+	}
 	if err := sentrygo.Init(sentrygo.ClientOptions{
 		Dsn:              cfg.SentryDSN,
 		Environment:      cfg.Env,
 		EnableTracing:    true,
-		TracesSampleRate: 1.0,
+		TracesSampleRate: tracesSampleRate,
+		AttachStacktrace: true,
 	}); err != nil {
 		return nil, err
 	}

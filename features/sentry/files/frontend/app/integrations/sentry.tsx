@@ -6,11 +6,13 @@ const dsn = import.meta.env.VITE_SENTRY_DSN;
 if (dsn) {
   Sentry.init({
     dsn,
+    environment: import.meta.env.MODE,
     integrations: [
       Sentry.browserTracingIntegration(),
       Sentry.replayIntegration(),
     ],
-    tracesSampleRate: 1.0,
+    tracesSampleRate: import.meta.env.PROD ? 0.1 : 1.0,
+    tracePropagationTargets: ["localhost", import.meta.env.VITE_API_URL],
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
   });
