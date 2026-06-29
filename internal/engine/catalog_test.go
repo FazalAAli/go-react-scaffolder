@@ -254,3 +254,23 @@ func TestCatalogFrontendProviderSeam(t *testing.T) {
 		t.Errorf("root.tsx does not render <Providers>:\n%s", root)
 	}
 }
+
+func TestCatalogServerSeams(t *testing.T) {
+	dst := writeRealCatalog(t)
+	serverGo := read(t, filepath.Join(dst, "backend", "internal", "server", "server.go"))
+
+	for _, want := range []string{
+		"scaffold:region:server-imports:start",
+		"scaffold:region:server-imports:end",
+		"scaffold:region:server-middleware:start",
+		"scaffold:region:server-middleware:end",
+		"e.Use(middleware.CORS())",
+	} {
+		if !strings.Contains(serverGo, want) {
+			t.Errorf("server.go missing %q:\n%s", want, serverGo)
+		}
+	}
+	if strings.Contains(serverGo, "sentryecho") {
+		t.Errorf("server.go should not reference sentryecho without the sentry feature:\n%s", serverGo)
+	}
+}

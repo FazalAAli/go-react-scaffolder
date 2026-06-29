@@ -14,12 +14,16 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	// scaffold:region:server-imports:start
+	// scaffold:region:server-imports:end
 )
 
 func Run(a *app.App) error {
 	e := echo.New()
 	e.HideBanner = true
 	e.Use(middleware.CORS())
+	// scaffold:region:server-middleware:start
+	// scaffold:region:server-middleware:end
 
 	service.NewGreeter(a).Mount(e) // one line per service
 
