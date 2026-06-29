@@ -8,7 +8,7 @@ import (
 	"backend/internal/app"
 
 	"connectrpc.com/connect"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 type Greeter struct {

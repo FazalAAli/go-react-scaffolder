@@ -2,8 +2,6 @@ package server
 
 import (
 	"context"
-	"errors"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,15 +10,14 @@ import (
 	"backend/internal/app"
 	"backend/internal/service"
 
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
 	// scaffold:region:server-imports:start
 	// scaffold:region:server-imports:end
 )
 
 func Run(a *app.App) error {
 	e := echo.New()
-	e.HideBanner = true
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 	// scaffold:region:server-middleware:start
@@ -28,17 +25,13 @@ func Run(a *app.App) error {
 
 	service.NewGreeter(a).Mount(e) // one line per service
 
-	go func() {
-		if err := e.Start(":" + a.Config.Port); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			e.Logger.Fatal(err)
-		}
-	}()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
-	<-quit
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	return e.Shutdown(ctx)
+	sc := echo.StartConfig{
+		Address:         ":" + a.Config.Port,
+		HideBanner:      true,
+		GracefulTimeout: 10 * time.Second,
+	}
+	return sc.Start(ctx, e)
 }
