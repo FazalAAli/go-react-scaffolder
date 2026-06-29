@@ -62,8 +62,10 @@ func TestCatalogAppGoSeams(t *testing.T) {
 		"scaffold:region:app-imports:start",
 		"scaffold:region:app-fields:start",
 		"scaffold:region:app-init:start",
+		"scaffold:region:app-close:start",
 		"a := &App{Config: cfg}",
 		"return a, nil",
+		"func (a *App) Close()",
 	} {
 		if !strings.Contains(appGo, want) {
 			t.Errorf("app.go missing %q:\n%s", want, appGo)
@@ -87,6 +89,7 @@ func TestCatalogPostgresFeature(t *testing.T) {
 		"DB *db.Pool",
 		`"backend/internal/db"`,
 		"db.New(context.Background())",
+		"a.DB.Close()",
 	} {
 		if !strings.Contains(appGo, want) {
 			t.Errorf("app.go missing %q:\n%s", want, appGo)
@@ -131,6 +134,7 @@ func TestCatalogSqliteFeature(t *testing.T) {
 		"DB *db.Pool",
 		`"backend/internal/db"`,
 		"db.New(context.Background())",
+		"_ = a.DB.Close()",
 	} {
 		if !strings.Contains(appGo, want) {
 			t.Errorf("app.go missing %q:\n%s", want, appGo)
@@ -164,5 +168,89 @@ func TestCatalogSqliteFeature(t *testing.T) {
 	gitignore := read(t, filepath.Join(dst, ".gitignore"))
 	if !strings.Contains(gitignore, "/backend/*.db") {
 		t.Errorf(".gitignore missing sqlite db ignore:\n%s", gitignore)
+	}
+}
+
+func TestCatalogConfigSeams(t *testing.T) {
+	dst := writeRealCatalog(t)
+	cfg := read(t, filepath.Join(dst, "backend", "internal", "config", "config.go"))
+
+	for _, want := range []string{
+		"scaffold:region:config-fields:start",
+		"scaffold:region:config-load:start",
+	} {
+		if !strings.Contains(cfg, want) {
+			t.Errorf("config.go missing %q:\n%s", want, cfg)
+		}
+	}
+	if strings.Contains(cfg, "PostHogAPIKey") {
+		t.Errorf("config.go should not reference PostHogAPIKey without the posthog feature:\n%s", cfg)
+	}
+}
+
+func TestCatalogPostHogFeature(t *testing.T) {
+	dst := writeRealCatalog(t, "posthog")
+
+	providers := read(t, filepath.Join(dst, "frontend", "app", "providers.tsx"))
+	for _, want := range []string{
+		`import { PostHogProvider } from "~/integrations/posthog";`,
+		"PostHogProvider,",
+	} {
+		if !strings.Contains(providers, want) {
+			t.Errorf("providers.tsx missing %q:\n%s", want, providers)
+		}
+	}
+	read(t, filepath.Join(dst, "frontend", "app", "integrations", "posthog.tsx"))
+
+	frontendEnv := read(t, filepath.Join(dst, "frontend", ".env"))
+	if !strings.Contains(frontendEnv, "VITE_POSTHOG_KEY=") {
+		t.Errorf("frontend/.env missing VITE_POSTHOG_KEY:\n%s", frontendEnv)
+	}
+
+	backendEnv := read(t, filepath.Join(dst, "backend", ".env"))
+	if !strings.Contains(backendEnv, "POSTHOG_API_KEY=") {
+		t.Errorf("backend/.env missing POSTHOG_API_KEY:\n%s", backendEnv)
+	}
+
+	cfg := read(t, filepath.Join(dst, "backend", "internal", "config", "config.go"))
+	for _, want := range []string{"PostHogAPIKey string", `os.Getenv("POSTHOG_API_KEY")`} {
+		if !strings.Contains(cfg, want) {
+			t.Errorf("config.go missing %q:\n%s", want, cfg)
+		}
+	}
+
+	appGo := read(t, filepath.Join(dst, "backend", "internal", "app", "app.go"))
+	for _, want := range []string{"PostHog *posthog.Client", `"backend/internal/posthog"`, "posthog.New(cfg)", "_ = a.PostHog.Close()"} {
+		if !strings.Contains(appGo, want) {
+			t.Errorf("app.go missing %q:\n%s", want, appGo)
+		}
+	}
+
+	phGo := read(t, filepath.Join(dst, "backend", "internal", "posthog", "posthog.go"))
+	for _, want := range []string{"NewWithConfig", "func (c *Client) Capture"} {
+		if !strings.Contains(phGo, want) {
+			t.Errorf("posthog.go missing %q:\n%s", want, phGo)
+		}
+	}
+}
+
+func TestCatalogFrontendProviderSeam(t *testing.T) {
+	dst := writeRealCatalog(t)
+
+	providers := read(t, filepath.Join(dst, "frontend", "app", "providers.tsx"))
+	for _, want := range []string{
+		"scaffold:region:providers-imports:start",
+		"scaffold:region:providers:start",
+		"export function Providers",
+		"reduceRight",
+	} {
+		if !strings.Contains(providers, want) {
+			t.Errorf("providers.tsx missing %q:\n%s", want, providers)
+		}
+	}
+
+	root := read(t, filepath.Join(dst, "frontend", "app", "root.tsx"))
+	if !strings.Contains(root, "<Providers>") {
+		t.Errorf("root.tsx does not render <Providers>:\n%s", root)
 	}
 }

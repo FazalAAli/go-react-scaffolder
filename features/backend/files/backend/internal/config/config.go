@@ -10,6 +10,8 @@ type Config struct {
 	Port            string
 	FrontendBaseURL string
 	Env             string
+	// scaffold:region:config-fields:start
+	// scaffold:region:config-fields:end
 }
 
 func Load() (*Config, error) {
@@ -29,5 +31,7 @@ func Load() (*Config, error) {
 		Port:            port,
 		FrontendBaseURL: os.Getenv("FRONTEND_BASE_URL"),
 		Env:             env,
+		// scaffold:region:config-load:start
+		// scaffold:region:config-load:end
 	}, nil
 }
