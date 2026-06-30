@@ -22,6 +22,7 @@
           packages = with pkgs; [
             go_1_26
             bun
+            buf
           ];
         };
       }
