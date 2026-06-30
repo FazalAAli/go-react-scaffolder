@@ -15,3 +15,6 @@ message GreetResponse {
 service GreeterService {
   rpc Greet(GreetRequest) returns (GreetResponse);
 }
+
+// scaffold:region:proto-defs:start
+// scaffold:region:proto-defs:end

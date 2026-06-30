@@ -171,3 +171,30 @@ func TestResolveDuplicateSelection(t *testing.T) {
 		t.Fatalf("air appears %d times, want 1 (dedup); Features = %v", count, p.Features)
 	}
 }
+
+func TestResolveRequiresOneOf(t *testing.T) {
+	catalog := []Feature{
+		{Name: "core", Always: true},
+		{Name: "postgres"},
+		{Name: "sqlite"},
+		{Name: "stripe", RequiresOneOf: []string{"postgres", "sqlite"}},
+	}
+
+	if _, err := Resolve(catalog, []string{"stripe"}); err == nil {
+		t.Fatal("expected error when no requires_one_of member is selected")
+	}
+	if _, err := Resolve(catalog, []string{"stripe", "postgres"}); err != nil {
+		t.Fatalf("postgres satisfies the group: %v", err)
+	}
+	if _, err := Resolve(catalog, []string{"stripe", "sqlite"}); err != nil {
+		t.Fatalf("sqlite satisfies the group: %v", err)
+	}
+
+	bad := []Feature{
+		{Name: "core", Always: true},
+		{Name: "stripe", RequiresOneOf: []string{"nope"}},
+	}
+	if _, err := Resolve(bad, []string{"stripe"}); err == nil {
+		t.Fatal("expected error for unknown requires_one_of member")
+	}
+}

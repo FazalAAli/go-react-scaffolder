@@ -75,6 +75,20 @@ func Resolve(catalog []Feature, selectedOptional []string) (Plan, error) {
 				return Plan{}, fmt.Errorf("feature %q requires %q, which is not selected", f.Name, r)
 			}
 		}
+		if len(f.RequiresOneOf) > 0 {
+			satisfied := false
+			for _, r := range f.RequiresOneOf {
+				if _, known := byName[r]; !known {
+					return Plan{}, fmt.Errorf("feature %q requires one of unknown feature %q", f.Name, r)
+				}
+				if active[r] {
+					satisfied = true
+				}
+			}
+			if !satisfied {
+				return Plan{}, fmt.Errorf("feature %q requires one of %v, none selected", f.Name, f.RequiresOneOf)
+			}
+		}
 	}
 
 	plan := Plan{Regions: map[RegionKey][]string{}}

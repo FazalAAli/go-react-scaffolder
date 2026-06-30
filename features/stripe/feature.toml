@@ -1,0 +1,78 @@
+name = "stripe"
+always = false
+description = "Stripe payments (React + Go)"
+
+requires_one_of = ["postgres", "sqlite"]
+
+post_steps = [
+  "cd frontend && bun add @stripe/stripe-js",
+  "cd proto && buf generate",
+]
+
+[[regions]]
+target = "proto/app/v1/app.proto"
+region = "proto-defs"
+content = """
+message CreateCheckoutSessionRequest {
+  string price_id = 1;
+}
+
+message CreateCheckoutSessionResponse {
+  string url = 1;
+}
+
+service StripeService {
+  rpc CreateCheckoutSession(CreateCheckoutSessionRequest) returns (CreateCheckoutSessionResponse);
+}"""
+
+[[regions]]
+target = "frontend/.env"
+region = "env"
+content = "VITE_STRIPE_PUBLISHABLE_KEY="
+
+[[regions]]
+target = "backend/.env"
+region = "env"
+content = """
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET="""
+
+[[regions]]
+target = "backend/internal/config/config.go"
+region = "config-fields"
+content = """
+StripeSecretKey     string
+StripeWebhookSecret string"""
+
+[[regions]]
+target = "backend/internal/config/config.go"
+region = "config-load"
+content = """
+StripeSecretKey:     os.Getenv("STRIPE_SECRET_KEY"),
+StripeWebhookSecret: os.Getenv("STRIPE_WEBHOOK_SECRET"),"""
+
+[[regions]]
+target = "backend/internal/app/app.go"
+region = "app-imports"
+content = '"backend/internal/stripe"'
+
+[[regions]]
+target = "backend/internal/app/app.go"
+region = "app-fields"
+content = "Stripe *stripe.Client"
+
+[[regions]]
+target = "backend/internal/app/app.go"
+region = "app-init"
+content = """
+sc, err := stripe.New(cfg)
+if err != nil {
+	return nil, err
+}
+a.Stripe = sc
+a.Mounts = append(a.Mounts, sc.Mount)"""
+
+[[regions]]
+target = "README.md"
+region = "readme-components"
+content = "- Stripe payments wired into the React app and Go backend (`stripe` feature)."
