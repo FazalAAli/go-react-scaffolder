@@ -76,6 +76,82 @@ func TestCatalogAppGoSeams(t *testing.T) {
 	}
 }
 
+func TestCatalogAddPostHogToExistingProject(t *testing.T) {
+	// Stamp a base project (no optional features), then add posthog the way the
+	// `scaffold add` command does: read the manifest, resolve the union, apply.
+	dst := writeRealCatalog(t)
+
+	providers := read(t, filepath.Join(dst, "frontend", "app", "providers.tsx"))
+	if strings.Contains(providers, "PostHogProvider") {
+		t.Fatalf("base project should not have posthog wired yet:\n%s", providers)
+	}
+
+	cat, err := LoadCatalog(catalogDir)
+	if err != nil {
+		t.Fatalf("LoadCatalog: %v", err)
+	}
+	applied, err := ReadManifest(dst)
+	if err != nil {
+		t.Fatalf("ReadManifest: %v", err)
+	}
+	if contains(applied, "posthog") {
+		t.Fatalf("manifest should not list posthog yet: %v", applied)
+	}
+
+	plan, err := Resolve(cat, []string{"posthog"})
+	if err != nil {
+		t.Fatalf("Resolve: %v", err)
+	}
+	if err := AddFeatures(plan, dst, map[string]bool{"posthog": true}); err != nil {
+		t.Fatalf("AddFeatures: %v", err)
+	}
+
+	providers = read(t, filepath.Join(dst, "frontend", "app", "providers.tsx"))
+	for _, want := range []string{
+		`import { PostHogProvider } from "~/integrations/posthog";`,
+		"PostHogProvider,",
+	} {
+		if !strings.Contains(providers, want) {
+			t.Errorf("providers.tsx missing %q after add:\n%s", want, providers)
+		}
+	}
+	// the new feature's own payload landed
+	read(t, filepath.Join(dst, "frontend", "app", "integrations", "posthog.tsx"))
+	read(t, filepath.Join(dst, "backend", "internal", "posthog", "posthog.go"))
+
+	backendEnv := read(t, filepath.Join(dst, "backend", ".env"))
+	if !strings.Contains(backendEnv, "POSTHOG_API_KEY=") {
+		t.Errorf("backend/.env missing POSTHOG_API_KEY after add:\n%s", backendEnv)
+	}
+
+	updated, err := ReadManifest(dst)
+	if err != nil {
+		t.Fatalf("ReadManifest after add: %v", err)
+	}
+	if !contains(updated, "posthog") {
+		t.Errorf("manifest not updated to include posthog: %v", updated)
+	}
+}
+
+func contains(ss []string, want string) bool {
+	for _, s := range ss {
+		if s == want {
+			return true
+		}
+	}
+	return false
+}
+
+func TestCatalogPostgresSqliteConflict(t *testing.T) {
+	cat, err := LoadCatalog(catalogDir)
+	if err != nil {
+		t.Fatalf("LoadCatalog: %v", err)
+	}
+	if _, err := Resolve(cat, []string{"postgres", "sqlite"}); err == nil {
+		t.Fatal("expected postgres+sqlite to be rejected as conflicting in the real catalog")
+	}
+}
+
 func TestCatalogPostgresFeature(t *testing.T) {
 	dst := writeRealCatalog(t, "postgres")
 

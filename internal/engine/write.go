@@ -13,7 +13,41 @@ import (
 // order, later features overwrite earlier on conflict), re-render managed
 // regions in any shared target file, then write scaffold.toml.
 func Write(plan Plan, projectRoot string) error {
-	for _, root := range plan.FileRoots {
+	if err := copyPayloads(plan.FileRoots, projectRoot); err != nil {
+		return err
+	}
+	if err := renderPlanRegions(plan, projectRoot); err != nil {
+		return err
+	}
+	return writeScaffoldToml(plan.Features, projectRoot)
+}
+
+// AddFeatures applies newly-selected features to an existing project. Unlike
+// Write it copies only the payloads of the features named in `add` (so it does
+// not clobber the user's edits to files owned by already-applied features), but
+// it re-renders every managed region from the full plan, so shared files end up
+// with the union of all active features' contributions. It then rewrites
+// scaffold.toml to the plan's full feature set.
+func AddFeatures(plan Plan, projectRoot string, add map[string]bool) error {
+	var roots []string
+	for i, name := range plan.Features {
+		if add[name] {
+			roots = append(roots, plan.FileRoots[i])
+		}
+	}
+	if err := copyPayloads(roots, projectRoot); err != nil {
+		return err
+	}
+	if err := renderPlanRegions(plan, projectRoot); err != nil {
+		return err
+	}
+	return writeScaffoldToml(plan.Features, projectRoot)
+}
+
+// copyPayloads copies each existing files/ tree into projectRoot in order;
+// later roots overwrite earlier ones on conflict. Missing roots are skipped.
+func copyPayloads(roots []string, projectRoot string) error {
+	for _, root := range roots {
 		if _, err := os.Stat(root); err != nil {
 			if os.IsNotExist(err) {
 				continue // a feature may have no payload
@@ -24,7 +58,12 @@ func Write(plan Plan, projectRoot string) error {
 			return err
 		}
 	}
+	return nil
+}
 
+// renderPlanRegions re-renders every managed region target in projectRoot from
+// the plan's contributions, replacing each region body in place.
+func renderPlanRegions(plan Plan, projectRoot string) error {
 	byTarget := map[string]map[string][]string{}
 	for key, contribs := range plan.Regions {
 		if byTarget[key.Target] == nil {
@@ -50,8 +89,7 @@ func Write(plan Plan, projectRoot string) error {
 			return err
 		}
 	}
-
-	return writeScaffoldToml(plan.Features, projectRoot)
+	return nil
 }
 
 func writeScaffoldToml(features []string, projectRoot string) error {

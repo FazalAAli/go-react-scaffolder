@@ -1,6 +1,7 @@
 name = "postgres"
 always = false
 description = "PostgreSQL via pgx + sqlc + goose migrations"
+conflicts = ["sqlite"]
 
 [[regions]]
 target = "backend/.env"
