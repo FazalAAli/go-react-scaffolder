@@ -48,7 +48,7 @@ func (c *Client) CreateCheckoutSession(
 	return connect.NewResponse(&appv1.CreateCheckoutSessionResponse{Url: s.URL}), nil
 }
 
-func (c *Client) handleWebhook(ctx echo.Context) error {
+func (c *Client) handleWebhook(ctx *echo.Context) error {
 	payload, err := io.ReadAll(ctx.Request().Body)
 	if err != nil {
 		return ctx.NoContent(http.StatusServiceUnavailable)
