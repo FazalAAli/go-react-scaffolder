@@ -2,6 +2,8 @@ package app
 
 import (
 	"backend/internal/config"
+
+	"github.com/labstack/echo/v5"
 	// scaffold:region:app-imports:start
 	// scaffold:region:app-imports:end
 )
@@ -10,6 +12,7 @@ import (
 // app-fields region and are constructed in New via the app-init region.
 type App struct {
 	Config *config.Config
+	Mounts []func(*echo.Echo)
 	// scaffold:region:app-fields:start
 	// scaffold:region:app-fields:end
 }

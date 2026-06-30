@@ -24,6 +24,9 @@ func Run(a *app.App) error {
 	// scaffold:region:server-middleware:end
 
 	service.NewGreeter(a).Mount(e) // one line per service
+	for _, m := range a.Mounts {
+		m(e)
+	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
