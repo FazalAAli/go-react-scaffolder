@@ -17,13 +17,14 @@ type RegionContribution struct {
 
 // Feature is one entry in the catalog, loaded from its feature.toml.
 type Feature struct {
-	Name        string               `toml:"name"`
-	Always      bool                 `toml:"always"`
-	Description string               `toml:"description"`
-	Conflicts   []string             `toml:"conflicts"` // optional features that cannot be active alongside this one
-	Requires    []string             `toml:"requires"`  // features that must also be active for this one to work
-	Regions     []RegionContribution `toml:"regions"`
-	PostSteps   []string             `toml:"post_steps"`
+	Name          string               `toml:"name"`
+	Always        bool                 `toml:"always"`
+	Description   string               `toml:"description"`
+	Conflicts     []string             `toml:"conflicts"` // optional features that cannot be active alongside this one
+	Requires      []string             `toml:"requires"`  // features that must also be active for this one to work
+	RequiresOneOf []string             `toml:"requires_one_of"`
+	Regions       []RegionContribution `toml:"regions"`
+	PostSteps     []string             `toml:"post_steps"`
 
 	Dir string `toml:"-"` // path to the feature directory, set by the loader
 }
